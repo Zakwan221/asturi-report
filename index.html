@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTURI Report Accounting System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Asturi Accounting System</h2>
+                <p class="sidebar-subtitle">Document Management System</p>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Add Topic Button -->
+                <button class="add-topic-btn" onclick="addTopic()">+ Add Topic</button>
+                
+                <!-- Topics Container -->
+                <div id="topics-container">
+                    <!-- Topics will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <div class="header-info">
+                    <h1 id="content-title">Select a Report</h1>
+                    <p id="content-subtitle">Choose a report from the sidebar to get started</p>
+                </div>
+                <div class="header-buttons">
+                    <button class="btn btn-outline" onclick="uploadPDF()">
+                        <i class="fas fa-upload"></i> Upload PDF
+                    </button>
+                    <button class="btn btn-outline" onclick="uploadImage()">
+                        <i class="fas fa-image"></i> Upload Image
+                    </button>
+                    <button class="btn btn-primary" onclick="exportToPDF()">
+                        <i class="fas fa-download"></i> Export PDF
+                    </button>
+                    <button class="btn btn-outline" onclick="convertToExcel()">
+                        <i class="fas fa-file-excel"></i> Convert to Excel
+                    </button>
+                </div>
+            </div>
+
+            <div class="content-body" id="content-body">
+                <div class="empty-state">
+                    <div class="document-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>No Report Selected</h3>
+                    <p>Select a report from the sidebar to view details or create a new topic to get started</p>
+                </div>
+            </div>
+
+            <!-- Report View (hidden by default) -->
+            <div class="report-view" id="report-view" style="display: none;">
+                <div class="report-header" id="report-header">
+                    <div class="report-icon" id="report-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h2 id="report-title">Report Title</h2>
+                    <p id="report-description">Report description will appear here</p>
+                    <div class="report-meta" id="report-meta">
+                        <span class="created-date" id="created-date"></span>
+                        <span class="upload-date" id="upload-date" style="display: none;"></span>
+                    </div>
+                </div>
+                
+                <!-- Image Display -->
+                <div id="image-viewer" class="image-viewer" style="display: none;">
+                    <div class="image-header">
+                        <h4><i class="fas fa-image"></i> Uploaded Image</h4>
+                        <button class="btn btn-outline btn-small" onclick="removeImage()">
+                            <i class="fas fa-trash"></i> Remove Image
+                        </button>
+                    </div>
+                    <img id="uploaded-image" alt="Uploaded document" />
+                </div>
+                
+                <!-- PDF Viewer -->
+                <div id="pdf-viewer" class="pdf-viewer" style="display: none;">
+                    <div class="pdf-controls">
+                        <button onclick="prevPage()" class="pdf-btn"><i class="fas fa-chevron-left"></i> Previous</button>
+                        <span id="page-info">Page 1 of 1</span>
+                        <button onclick="nextPage()" class="pdf-btn">Next <i class="fas fa-chevron-right"></i></button>
+                        <button onclick="zoomIn()" class="pdf-btn"><i class="fas fa-search-plus"></i></button>
+                        <button onclick="zoomOut()" class="pdf-btn"><i class="fas fa-search-minus"></i></button>
+                    </div>
+                    <canvas id="pdf-canvas"></canvas>
+                </div>
+                
+                <div class="upload-section" id="upload-section">
+                    <p><span class="folder-emoji">📁</span> Upload a PDF or Image to view your report document</p>
+                    <input type="file" id="pdf-input" accept=".pdf" onchange="handlePDFUpload(event)" style="display: none;">
+                    <input type="file" id="image-input" accept=".png,.jpg,.jpeg,.gif,.bmp" onchange="handleImageUpload(event)" style="display: none;">
+                    <div class="upload-buttons">
+                        <button class="upload-btn" onclick="document.getElementById('pdf-input').click()">
+                            <i class="fas fa-file-pdf"></i> Upload PDF Document
+                        </button>
+                        <button class="upload-btn secondary" onclick="document.getElementById('image-input').click()">
+                            <i class="fas fa-image"></i> Upload Image
+                        </button>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="setDateRange()">
+                        <i class="fas fa-calendar-alt"></i> Set Date Range
+                    </button>
+                    <button class="action-btn" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button class="action-btn" onclick="downloadAsExcel()" id="excel-btn" style="display: none;">
+                        <i class="fas fa-file-excel"></i> Download Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding topics -->
+    <div id="topic-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3><i class="fas fa-folder-plus"></i> Add New Topic</h3>
+            <input type="text" id="topic-name" placeholder="Enter topic name" />
+            
+            <!-- Enhanced folder type selection -->
+            <div class="folder-type-selection">
+                <p class="selection-label">Choose topic type:</p>
+                <label class="radio-option">
+                    <input type="radio" name="topic-type" value="folder" id="type-folder" checked>
+                    <span class="radio-icon folder-emoji">📁</span>
+                    <span class="radio-text">
+                        <strong>Folder</strong>
+                        <small>Can contain other folders and PDF folders</small>
+                    </span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="topic-type" value="pdf-folder" id="type-pdf-folder">
+                    <span class="radio-icon">📄</span>
+                    <span class="radio-text">
+                        <strong>PDF Folder</strong>
+                        <small>For uploading and managing PDF documents and images</small>
+                    </span>
+                </label>
+            </div>
+            
+            <div class="modal-buttons">
+                <button onclick="closeModal()">Cancel</button>
+                <button onclick="createTopic()">Create Topic</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding subtopics -->
+    <div id="subtopic-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSubtopicModal()">&times;</span>
+            <h3><i class="fas fa-file-plus"></i> Add New Item</h3>
+            <input type="text" id="subtopic-name" placeholder="Enter item name" />
+            <input type="text" id="subtopic-description" placeholder="Enter description (optional)" />
+            
+            <!-- Enhanced subtopic type selection -->
+            <div class="folder-type-selection">
+                <p class="selection-label">Choose item type:</p>
+                <label class="radio-option">
+                    <input type="radio" name="subtopic-type" value="folder" id="subtype-folder" checked>
+                    <span class="radio-icon folder-emoji">📁</span>
+                    <span class="radio-text">
+                        <strong>Folder</strong>
+                        <small>Can contain other folders and PDF folders</small>
+                    </span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="subtopic-type" value="pdf-folder" id="subtype-pdf-folder">
+                    <span class="radio-icon">📄</span>
+                    <span class="radio-text">
+                        <strong>PDF Folder</strong>
+                        <small>For uploading and managing PDF documents and images</small>
+                    </span>
+                </label>
+            </div>
+            
+            <div class="modal-buttons">
+                <button onclick="closeSubtopicModal()">Cancel</button>
+                <button onclick="createSubtopic()">Create Item</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="rename-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRenameModal()">&times;</span>
+            <h3><i class="fas fa-edit"></i> Rename Item</h3>
+            <input type="text" id="rename-input" placeholder="Enter new name" />
+            <div class="modal-buttons">
+                <button onclick="closeRenameModal()">Cancel</button>
+                <button onclick="confirmRename()">Rename</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- SheetJS for Excel conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
